@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AIRGUARD AI – Edge AI Hyperlocal Air Monitor (Arduino UNO Q)</title>
+<style>
+:root{--bg:#f4f7fa;--card:#fff;--tx:#14202b;--mu:#5b6b7a;--bd:#d6dfe7;--ac:#0a7d6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1419;--card:#17202a;--tx:#e6edf3;--mu:#8fa1b2;--bd:#293644;--ac:#3ddbb8}}
+:root[data-theme="dark"]{--bg:#0e1419;--card:#17202a;--tx:#e6edf3;--mu:#8fa1b2;--bd:#293644;--ac:#3ddbb8}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:14px}
+h1{font-size:1.35rem;margin:0}h2{font-size:1.05rem;margin:0 0 8px}h3{font-size:.95rem;margin:12px 0 4px}
+.sub{color:var(--mu);font-size:.85rem;margin:2px 0 10px}
+.warn{background:#fff3cd;color:#5c4400;border-radius:8px;padding:8px 10px;font-size:.82rem;margin:8px 0}
+.bar,.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 11px;cursor:pointer}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.m{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.m div{background:var(--bg);border-radius:8px;padding:6px 8px}.m b{display:block;font-size:1.15rem}.m span{font-size:.72rem;color:var(--mu)}
+.aqi{font-size:2.6rem;font-weight:700;line-height:1}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.oled{background:#001a0d;color:#5dff9a;font:12px/1.4 ui-monospace,Consolas,monospace;padding:8px;border-radius:6px;white-space:pre}
+.bw{height:8px;background:var(--bd);border-radius:4px;overflow:hidden}.bw i{display:block;height:100%;background:var(--ac)}
+.al{border-left:5px solid var(--ac);padding:6px 10px;background:var(--bg);border-radius:6px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:.82rem}
+.flow span{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:4px 8px}.flow em{color:var(--ac);font-style:normal;font-weight:700}
+.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.82rem}th,td{border:1px solid var(--bd);padding:5px 7px;text-align:left;vertical-align:top}th{background:var(--bg)}
+.sec{display:none}.sec.on{display:block}
+ul{margin:4px 0;padding-left:20px}li{margin:2px 0}
+.t{font:11px system-ui,sans-serif;fill:#223}.s{font:7px system-ui,sans-serif;fill:#fff}
+</style></head><body><main>
+<h1>AIRGUARD AI</h1>
+<p class="sub">Smart Edge AI hyperlocal air-pollution monitoring &amp; prediction · Central platform: <b>Arduino UNO Q</b> · No cloud APIs</p>
+<div class="warn"><b>Simulation notice:</b> all values below are <b>SIMULATED demo data</b>, not real sensor measurements. Source classification is a probabilistic estimate from sensor patterns, not validated real-world detection. Real readings require sensor calibration first.</div>
+<div class="bar" id="scn"></div>
+<div class="tabs" id="tabs"></div>
+
+<section class="sec on" id="s-proto">
+<div class="card"><h2>Prototype: labeled layout (cutaway view)</h2>
+<svg viewBox="0 0 760 440" role="img" aria-label="Cutaway of the AIRGUARD AI monitoring station surrounded by road, residential area, construction site and waste-burning zone" style="width:100%;height:auto;border-radius:10px">
+<rect width="760" height="230" fill="#dbe9f4"/><rect y="230" width="760" height="210" fill="#c9d6b8"/>
+<g fill="#e8c9a0" stroke="#8a6d4b"><rect x="30" y="195" width="50" height="40"/><rect x="95" y="205" width="45" height="30"/><rect x="155" y="190" width="55" height="45"/></g>
+<g fill="#b5543f"><polygon points="25,195 55,175 85,195"/><polygon points="90,205 117,188 145,205"/><polygon points="150,190 182,168 215,190"/></g>
+<text class="t" x="30" y="255">Residential area</text>
+<g id="z-A"><rect x="10" y="300" width="300" height="34" fill="#555"/><path d="M10 317H310" stroke="#fff" stroke-dasharray="14 10"/><rect x="40" y="305" width="34" height="12" rx="3" fill="#c33"/><rect x="170" y="320" width="34" height="12" rx="3" fill="#36c"/><rect x="240" y="305" width="34" height="12" rx="3" fill="#ccc"/><circle cx="36" cy="312" r="5" fill="#888" opacity=".6"/><circle cx="236" cy="312" r="5" fill="#888" opacity=".6"/><text class="t" x="12" y="294">Road · Scenario A (traffic)</text></g>
+<g id="z-B"><rect x="20" y="350" width="230" height="70" rx="8" fill="#7a6a55"/><polygon points="110,395 125,365 135,382 145,360 160,395" fill="#f08a00"/><polygon points="120,395 130,378 140,395" fill="#ffd23f"/><g fill="#777" opacity=".55"><circle cx="135" cy="348" r="9"/><circle cx="160" cy="335" r="12"/><circle cx="190" cy="322" r="14"/></g><text class="t" x="22" y="435">Waste-burning zone · Scenario B</text></g>
+<g id="z-C"><rect x="520" y="290" width="230" height="130" rx="6" fill="#d9c9a3"/><rect x="550" y="340" width="70" height="60" fill="none" stroke="#666" stroke-width="3"/><path d="M700 200V290M630 205H745M720 205V235" stroke="#c80" stroke-width="4"/><g fill="#b08d57" opacity=".6"><circle cx="575" cy="320" r="12"/><circle cx="600" cy="305" r="9"/><circle cx="545" cy="305" r="8"/></g><text class="t" x="522" y="435">Construction site · Scenario C</text></g>
+<rect x="396" y="205" width="8" height="130" fill="#789"/><rect x="370" y="330" width="60" height="8" fill="#789"/>
+<rect x="320" y="12" width="160" height="14" fill="#235" transform="skewX(-8)"/><text class="t" x="330" y="10">Solar panel (optional)</text>
+<rect x="300" y="40" width="200" height="170" rx="10" fill="#e8eef3" stroke="#456" stroke-width="2" opacity=".95"/>
+<rect x="312" y="52" width="84" height="38" rx="3" fill="#001a0d"/><text id="o1" x="316" y="66" style="font:9px monospace" fill="#5dff9a"></text><text id="o2" x="316" y="80" style="font:9px monospace" fill="#5dff9a"></text>
+<g id="leds"><circle cx="420" cy="62" r="6"/><circle cx="438" cy="62" r="6"/><circle cx="456" cy="62" r="6"/><circle cx="474" cy="62" r="6"/></g><text class="t" x="414" y="82" style="font-size:8px">G&#160;&#160;&#160;Y&#160;&#160;&#160;&#160;O&#160;&#160;&#160;&#160;R</text>
+<circle cx="476" cy="104" r="9" fill="#333"/><text class="t" x="448" y="124" style="font-size:8px">Buzzer</text>
+<rect x="312" y="100" width="130" height="50" rx="4" fill="#0a7d6b"/><text class="s" x="318" y="118" style="font-size:10px">Arduino UNO Q</text><text class="s" x="318" y="132">STM32 MCU (I/O) + Qualcomm MPU (AI, dashboard)</text>
+<g stroke-width="1.5" fill="none"><path d="M338 162V150" stroke="#e33"/><path d="M388 162V150" stroke="#39f"/><path d="M432 162V150" stroke="#fa0"/><path d="M474 162V138H442" stroke="#a5f"/></g>
+<rect x="312" y="162" width="52" height="36" rx="3" fill="#345"/><text class="s" x="316" y="178">PMS5003</text><text class="s" x="316" y="188">PM2.5/PM10</text>
+<rect x="368" y="162" width="40" height="36" rx="3" fill="#345"/><text class="s" x="371" y="178">BME688</text><text class="s" x="371" y="188">VOC</text>
+<rect x="412" y="162" width="40" height="36" rx="3" fill="#345"/><text class="s" x="415" y="178">BME280</text><text class="s" x="415" y="188">T / RH</text>
+<rect x="456" y="162" width="36" height="36" rx="3" fill="#345"/><text class="s" x="459" y="178">CO</text><text class="s" x="459" y="188">sensor</text>
+<g stroke="#678" stroke-width="2"><path d="M300 110h8M300 120h8M300 130h8M492 130h8M492 140h8"/></g><text class="t" x="506" y="145" style="font-size:9px">vents</text>
+<g stroke="#2a8" stroke-width="2" fill="none" marker-end="none"><path d="M338 232V212M388 232V212M432 232V212M474 232V212"/></g><text class="t" x="300" y="248" style="font-size:9px">air inlets (shielded from rain)</text>
+<text class="t" x="304" y="34" style="font-size:9px">Weather-resistant enclosure (cutaway)</text>
+<text class="t" x="515" y="60">USB-C 5V / battery + solar charger</text><path d="M512 56L500 90" stroke="#456" fill="none"/>
+</svg>
+<div class="flow" style="margin-top:8px"><span>Sensors</span><em>→</em><span>UNO Q MCU: sample &amp; filter</span><em>→</em><span>UNO Q MPU: TinyML inference</span><em>→</em><span>AQI · 15–30 min trend · source estimate</span><em>→</em><span>OLED · LEDs · buzzer · local dashboard</span></div>
+<p class="sub">Highlighted zone = active scenario. The page is a 2D schematic of the station, not a CAD render.</p></div>
+</section>
+
+<section class="sec" id="s-dash">
+<div class="g">
+<div class="card"><h2>Air quality status</h2><div class="aqi" id="aqi">–</div><div><span class="dot" id="dot"></span><b id="cat"></b> <span class="sub">Indian NAQI (CPCB) sub-index, indicative</span></div>
+<div class="m" style="margin-top:8px"><div><b id="pm25">–</b><span>PM2.5 µg/m³</span></div><div><b id="pm10">–</b><span>PM10 µg/m³</span></div><div><b id="co">–</b><span>CO ppm</span></div><div><b id="voc">–</b><span>TVOC ppb</span></div><div><b id="t">–</b><span>Temp °C</span></div><div><b id="rh">–</b><span>Humidity %</span></div></div></div>
+<div class="card"><h2>Trend &amp; prediction</h2><svg id="ch" viewBox="0 0 300 100" style="width:100%;height:auto;background:var(--bg);border-radius:8px"></svg>
+<p class="sub">Solid: history (1 tick = 1 simulated min). Dashed: predicted next 30 min.</p>
+<div class="m"><div><b id="trd">–</b><span>Trend</span></div><div><b id="p15">–</b><span>AQI +15 min</span></div><div><b id="p30">–</b><span>AQI +30 min</span></div></div></div>
+<div class="card"><h2>Pollution-source estimate</h2><b id="src">–</b><div class="bw" style="margin:6px 0"><i id="cf" style="width:0"></i></div><span class="sub" id="cft"></span>
+<p class="sub">Probabilistic, from PM2.5/PM10 ratio, CO and VOC patterns (stand-in for the TinyML model). Not proof of source.</p></div>
+<div class="card"><h2>Alert &amp; recommendation</h2><div class="al" id="alt"></div><h3>OLED preview</h3><div class="oled" id="oled"></div></div>
+<div class="card"><h2>Device health</h2><ul id="hl"></ul></div>
+</div></section>
+
+<section class="sec" id="s-arch">
+<div class="card"><h2>Functional block diagram</h2>
+<div class="flow"><span>PMS5003 (UART)</span><span>BME688 (I²C)</span><span>BME280 (I²C)</span><span>CO module + ADS1115 (I²C)</span><em>→</em><span><b>UNO Q MCU (STM32U585)</b>: sampling, median filter, RH correction, LED/buzzer</span><em>⇄ Bridge ⇄</em><span><b>UNO Q MPU (Linux)</b>: features → TinyML classifier + trend model → alert rules → SQLite</span><em>→</em><span>Wi-Fi hotspot dashboard (local only)</span></div>
+<p class="sub">MCU keeps real-time I/O and the safety alerts running; MPU does inference and serves the dashboard. Check current Arduino App Lab docs for the exact MCU↔MPU bridge API and pin names.</p></div>
+<div class="card tbl"><h2>Sensor-to-Arduino connection concept</h2><table><tr><th>Part</th><th>Interface</th><th>Notes</th></tr>
+<tr><td>PMS5003 (or SPS30)</td><td>UART, 5 V supply</td><td>Use SET pin to sleep the fan between samples; 3.3 V logic matches UNO Q.</td></tr>
+<tr><td>BME688</td><td>I²C 0x77</td><td>VOC/IAQ index, relative not absolute ppb; needs burn-in and BSEC calibration.</td></tr>
+<tr><td>BME280</td><td>I²C 0x76</td><td>Temp/RH/pressure; mount away from heat sources; RH used to correct PM readings.</td></tr>
+<tr><td>CO sensor (electrochemical module preferred; MQ-7 is low-cost but needs heater cycling)</td><td>Analog via ADS1115 I²C 0x48</td><td>Zero/span calibration required; cross-sensitivity to other gases.</td></tr>
+<tr><td>SSD1306 OLED</td><td>I²C 0x3C</td><td>Shows AQI, PM, trend, alert.</td></tr>
+<tr><td>4 LEDs (G/Y/O/R)</td><td>4 GPIO + 220 Ω</td><td>NAQI mapping: ≤100 green, ≤200 yellow, ≤300 orange, &gt;300 red.</td></tr>
+<tr><td>Buzzer</td><td>GPIO via transistor</td><td>Triggers above the configured threshold (default AQI &gt; 200), with hysteresis + mute.</td></tr>
+<tr><td>Power</td><td>USB-C 5 V/3 A, or Li-ion + charge controller + 6 V solar</td><td>Fan duty-cycling and MPU idle cut average power.</td></tr></table></div>
+<div class="card"><h2>Edge AI processing workflow</h2><ol>
+<li>Sample sensors (PM duty-cycled, e.g. 30 s ON per minute); median-filter spikes.</li>
+<li>Apply humidity correction to PM; apply calibration coefficients.</li>
+<li>Compute AQI (CPCB NAQI breakpoints for PM2.5/PM10; CO/VOC shown as readings).</li>
+<li>Build window features: mean, slope, PM2.5/PM10 ratio, CO, VOC index, time of day.</li>
+<li>Trend model (linear/ridge regression or small GRU) → +15/+30 min AQI.</li>
+<li>TinyML source classifier (random forest / small NN, trained on labeled field + replay data) → class probabilities; show confidence, never certainty.</li>
+<li>Rules with hysteresis create alerts and situation-specific advice.</li>
+<li>Log readings and predictions to local SQLite; serve dashboard over local Wi-Fi. No personal data, no tracking.</li></ol></div>
+</section>
+
+<section class="sec" id="s-plan">
+<div class="card tbl"><h2>Demonstration plan</h2><table><tr><th>Scenario</th><th>Input</th><th>Expected display</th><th>Recommendation</th></tr>
+<tr><td>A Traffic</td><td>Replay of road-side dataset, or place near a real road</td><td>PM + CO rising; trend ↑; "Elevated pollution detected near the road."</td><td>Avoid the congested area when feasible.</td></tr>
+<tr><td>B Garbage burning</td><td>Replayed smoke-pattern data (high PM2.5/PM10 ratio, CO, VOC). Do not burn waste for a demo.</td><td>"Possible smoke-related pollution detected."</td><td>Keep distance; report suspected burning to the local authority.</td></tr>
+<tr><td>C Construction dust</td><td>Replay, or a small chalk/duster dust puff at a safe distance</td><td>PM10-dominant; "Dust-related pollution warning."</td><td>Water spraying, cover materials, control dust-generating work.</td></tr></table>
+<p class="sub">Label every run "simulated" or "measured". Pass criteria: alerts fire offline, LED/buzzer match AQI, dashboard works with Wi-Fi uplink disabled.</p></div>
+<div class="card"><h2>Implementation plan</h2><ul>
+<li><b>Hardware (wk 1–2):</b> breadboard, then PCB/perfboard; enclosure with rain-shielded inlets and fan airflow; fit sensors away from heat.</li>
+<li><b>Firmware (wk 2–3):</b> MCU drivers, sampling scheduler, watchdog, LED/buzzer logic; MPU service for storage, inference, web dashboard.</li>
+<li><b>AI model (wk 3–5):</b> collect labeled windows (traffic, burning, dust, background), train/validate with a held-out location, quantize to TFLite/ONNX, measure latency and RAM.</li>
+<li><b>Calibration (wk 4–5):</b> co-locate with a reference monitor for several days, fit PM correction (incl. RH); CO zero/span; re-check drift periodically. Until done, show readings as "uncalibrated".</li>
+<li><b>Testing (wk 5–6):</b> outage test, 72 h soak, rain/heat test, power logging, alert false-alarm review.</li></ul>
+<h3>Known limitations</h3><ul><li>Low-cost PM sensors are less accurate at high humidity and for very fine or very coarse particles.</li><li>Source classification may be wrong and varies by site; validate before relying on it.</li><li>The classifier on this page is a rule-based stand-in for the trained model.</li></ul></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const SC={base:{n:'Baseline (clean)',pm25:22,pm10:45,co:.6,voc:90},A:{n:'A · Traffic',pm25:85,pm10:150,co:7,voc:320},B:{n:'B · Garbage burning',pm25:210,pm10:250,co:13,voc:750},C:{n:'C · Construction dust',pm25:70,pm10:380,co:.9,voc:110}};
+let cur='base',v={pm25:22,pm10:45,co:.6,voc:90,t:29,rh:62},H=[],rows=0,ema=0;
+const b25=[[0,30,0,50],[30,60,50,100],[60,90,100,200],[90,120,200,300],[120,250,300,400],[250,500,400,500]];
+const b10=[[0,50,0,50],[50,100,50,100],[100,250,100,200],[250,350,200,300],[350,430,300,400],[430,700,400,500]];
+const sub=(x,b)=>{for(const[l,h,a,c]of b)if(x<=h)return a+(c-a)*(Math.max(x,l)-l)/(h-l);return 500};
+const CAT=[[50,'Good'],[100,'Satisfactory'],[200,'Moderate'],[300,'Poor'],[400,'Very Poor'],[999,'Severe']];
+const COL=['#2e9e4f','#e6c200','#f08a00','#d92d20'];
+const led=a=>a<=100?0:a<=200?1:a<=300?2:3;
+const LBL={traffic:'Traffic-related pattern',burn:'Possible smoke / waste-burning pattern',dust:'Construction-dust pattern',mixed:'Unclear / mixed pattern'};
+const ALR={traffic:['Elevated pollution detected near the road.','Avoid the congested area when feasible.'],burn:['Possible smoke-related pollution detected.','Maintain distance and report suspected burning to the local authority.'],dust:['Dust-related pollution warning (PM10-dominant).','Use dust suppression (water spray), cover construction materials, control dust-generating activities.'],mixed:['Elevated pollution, source unclear.','Reduce outdoor exertion and keep monitoring.']};
+function classify(){const r=v.pm25/Math.max(v.pm10,1),M={traffic:[.55,6,300],burn:[.85,12,700],dust:[.25,.9,120]},s={};let tot=.05;
+for(const k in M){const m=M[k];s[k]=Math.exp(-.5*(((r-m[0])/.12)**2+((v.co-m[1])/3)**2+((v.voc-m[2])/250)**2));tot+=s[k]}
+s.mixed=.05;for(const k in s)s[k]/=tot;return s}
+function step(){
+ for(const k of['pm25','pm10','co','voc']){const g=SC[cur][k];v[k]=Math.max(0,v[k]+(g-v[k])*.2+(Math.random()-.5)*g*.05)}
+ v.t=29+(Math.random()-.5)*.4;v.rh=62+(Math.random()-.5)*1.5;
+ const aqi=Math.round(Math.max(sub(v.pm25,b25),sub(v.pm10,b10)));
+ H.push(aqi);if(H.length>60)H.shift();rows++;ema=ema?.6*ema+.4*aqi:aqi;
+ const n=Math.min(10,H.length),y=H.slice(-n);let sl=0;
+ if(n>2){const mx=(n-1)/2,my=y.reduce((a,b)=>a+b)/n;let nu=0,de=0;y.forEach((q,i)=>{nu+=(i-mx)*(q-my);de+=(i-mx)**2});sl=nu/de}
+ const cl=x=>Math.round(Math.min(500,Math.max(0,x))),p15=cl(ema+sl*15*.35),p30=cl(ema+sl*30*.35);
+ const trd=sl>2?'Rising ↑':sl<-2?'Falling ↓':'Stable →';
+ const c=classify(),top=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];
+ let key=top,conf=c[top];if(conf<.6)key='mixed';
+ const cat=CAT.find(x=>aqi<=x[0])[1],li=led(aqi);
+ $('aqi').textContent=aqi;$('cat').textContent=cat;$('dot').style.background=COL[li];
+ $('pm25').textContent=v.pm25.toFixed(0);$('pm10').textContent=v.pm10.toFixed(0);$('co').textContent=v.co.toFixed(1);$('voc').textContent=v.voc.toFixed(0);$('t').textContent=v.t.toFixed(1);$('rh').textContent=v.rh.toFixed(0);
+ $('trd').textContent=trd;$('p15').textContent=p15;$('p30').textContent=p30;
+ const mxv=Math.max(150,...H,p30),X=i=>i*240/59,Y=q=>98-q/mxv*94;
+ $('ch').innerHTML='<polyline fill="none" stroke="#0a7d6b" stroke-width="2" points="'+H.map((q,i)=>X(i).toFixed(1)+','+Y(q).toFixed(1)).join(' ')+'"/><polyline fill="none" stroke="#f08a00" stroke-width="2" stroke-dasharray="4 3" points="'+X(H.length-1).toFixed(1)+','+Y(H[H.length-1]).toFixed(1)+' 270,'+Y(p15).toFixed(1)+' 300,'+Y(p30).toFixed(1)+'"/>';
+ let srcT,cf,al,rc;
+ if(aqi<=100){srcT='No significant pollution pattern';cf=0;al='No alert. Air quality is acceptable.';rc='Normal outdoor activity is fine.'}
+ else{srcT=LBL[key];cf=conf;[al,rc]=ALR[key];if(aqi>300)rc+=' Limit outdoor activity.'}
+ $('src').textContent=srcT;$('cf').style.width=(cf*100)+'%';$('cft').textContent=cf?'Estimated confidence '+Math.round(cf*100)+'% (simulated)':'';
+ const warn=aqi>200;$('alt').style.borderColor=COL[li];$('alt').innerHTML='<b>'+(warn?'🔔 ':'')+al+'</b><br>'+rc;
+ const ol=['PM2.5 '+v.pm25.toFixed(0)+' PM10 '+v.pm10.toFixed(0),'AQI '+aqi+' '+cat.slice(0,12),'Trend '+trd,warn?'!! ALERT !!':'OK'];
+ $('oled').textContent=ol.join('\n');$('o1').textContent='AQI '+aqi+' '+cat.slice(0,6);$('o2').textContent=trd;
+ [...$('leds').children].forEach((e,i)=>{e.setAttribute('fill',i===li?COL[i]:'#9aa');e.setAttribute('opacity',i===li?1:.35)});
+ ['A','B','C'].forEach(k=>$('z-'+k).setAttribute('opacity',cur===k||cur==='base'?1:.35));
+ $('hl').innerHTML='<li>Data source: <b>SIMULATED</b></li><li>Offline mode: <b>Active</b> (0 cloud calls, local AP only)</li><li>Sensors: PMS5003 OK · BME688 OK · BME280 OK · CO OK (simulated status)</li><li>Local log: '+rows+' rows in SQLite (simulated)</li><li>Buzzer: '+(warn?'ON':'armed')+'</li>';
+}
+const sb=$('scn');for(const k in SC){const b=document.createElement('button');b.textContent=SC[k].n;b.id='b'+k;b.onclick=()=>{cur=k;[...sb.children].forEach(x=>x.classList.toggle('on',x===b))};sb.appendChild(b)}
+$('bbase').classList.add('on');
+const T=[['proto','Prototype'],['dash','Live dashboard'],['arch','Architecture'],['plan','Plan']],tb=$('tabs');
+T.forEach(([id,n],i)=>{const b=document.createElement('button');b.textContent=n;if(!i)b.classList.add('on');b.onclick=()=>{[...tb.children].forEach(x=>x.classList.toggle('on',x===b));T.forEach(([j])=>$('s-'+j).classList.toggle('on',j===id))};tb.appendChild(b)});
+step();setInterval(step,1000);
+</script></body></html>
